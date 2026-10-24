@@ -1,81 +1,80 @@
-# Eye-Machine Interaction (EMI) Direction Classification
+# Sleep rapid eye movement monitoring with a biocompatible smart contact lens via wireless filtered radio-frequency coupling
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
 This repository contains the machine learning source code and data processing scripts for our paper:
 
-> **"[Insert Your Paper Title Here]"** (Currently under review / Published in [Journal/Conference Name]).
+> **"Sleep rapid eye movement monitoring with a biocompatible smart contact lens via wireless filtered radio-frequency coupling"** (In submission).
 
-## 📌 Overview
+> **Scope.** The supplied materials represent two related but separate parts of the experimental workflow: (1) a random-forest evaluation using four-channel frequency/loss features, and (2) Arduino control of a two-axis eye model using prerecorded gaze values. 
 
-This project utilizes a Random Forest (RF) classifier to interpret and classify eye movements into distinct directional commands (e.g., Up, Down, Left, Right). It is designed to facilitate research in Eye-Machine Interaction (EMI) interfaces by providing a robust, interpretable machine learning pipeline.
-
-## 📂 Repository Structure
+## Repository structure
 
 ```text
-.
-├── data/
-│   ├── train_set.csv        # Training dataset (Please upload your sample data here)
-│   └── test_set.csv         # Testing dataset
-├── eye_movement_random_forest_classifier.py        # Main script for training and evaluating the RF model
-├── requirements.txt         # List of Python dependencies
-└── README.md                # Project documentation
+.  
+├── README.md  
+├── data/  
+│   ├── train_set.csv  
+│   └── test_set.csv  
+├── machine_learning/  
+│   └── random_forest_model.py  
+└── arduino/  
+    ├── Code_DRYAD_4direction_REM.ino   
+    └── Code_DRYAD_4direction_REM.ino  
 ```
 
-## 🚀 Getting Started
+## Machine-learning data and evaluation
 
-### 1. Prerequisites
+Across the two CSV files, the dataset contains 800 observations: 640 in the training split and 160 in the test split. Both splits are class-balanced, with 160 training and 40 test observations for each label (1–4).
 
-Ensure you have Python 3.8 or higher installed. Clone this repository to your local machine:
+The feature columns are:
+
+- `Ch1_Freq`, `Ch1_Loss`
+- `Ch2_Freq`, `Ch2_Loss`
+- `Ch3_Freq`, `Ch3_Loss`
+- `Ch4_Freq`, `Ch4_Loss`
+- `Label` (target)
+
+Each row in `train_set.csv` and `test_set.csv` represents one eye-movement measurement acquired using a vector network analyzer (VNA), comprising resonant-signal data from four channels. For each channel, `Freq` denotes the resonance frequency of the measured signal, reported in hertz (Hz), and `Loss` denotes the corresponding return loss, reported in decibels (dB). `Label` indicates the eye-movement direction: `1 = Up`, `2 = Down`, `3 = Left`, and `4 = Right`.
+
+### Python dependencies
+
+The evaluation script imports:
+
+- Python 3.8
+- `pandas`
+- `numpy`
+- `matplotlib`
+- `scikit-learn`
+- An Excel reader supported by pandas (for example, `openpyxl`)
+
+Install the packages in an isolated environment, then run the script after setting a valid workbook path:
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+python -m pip install pandas numpy matplotlib scikit-learn openpyxl  
+python machine_learning/random_forest_noisy_test_evaluation.py  
 ```
 
-### 2. Install Dependencies
+## Arduino eye-model control
 
-Install the required Python packages using pip:
+Both sketches target an Arduino Nano-style board and an Adafruit PCA9685 PWM driver. The Arduino IDE's Library Manager should be used to install the Adafruit PWM Servo Driver library. They store prerecorded gaze values in program memory (`PROGMEM`) and control horizontal and vertical axes through servo PWM outputs. The sketches use different command representations and timing settings; they are alternative implementations, not interchangeable data formats.
 
-```bash
-pip install pandas scikit-learn matplotlib
+已根据截图中的文件名后缀明确区分两种状态，并更新 README：
+
+### Arduino-Based Eye-Movement Simulation
+
+The two Arduino sketches reproduce prerecorded eye movements under two behavioral conditions: REM sleep and wakefulness. Their original filename suffixes identify the conditions: `Code_DRYAD_4direction_REM.ino` is the REM-sleep simulation, and `Code_DRYAD_4direction_weak.ino` is the wakefulness simulation. In this repository, these sketches are organized as follows:
+
+The eye model is controlled by an Arduino microcontroller connected to a PCA9685 PWM driver. The Arduino sends control commands through the PCA9685 to drive the eye-model actuators. This description identifies the experimental condition represented by each sketch and does not interpret or rely on the source code's internal classification logic.
+
+### Hardware and safety
+
+Before connecting servos, verify the PCA9685 channel assignments, servo direction, pulse range, mechanical travel, and power requirements for the specific hardware. Use an appropriate external servo supply where required, share ground with the controller, and test with the mechanism unloaded or mechanically constrained. The angle-to-pulse conversion constants and base pulse values are hardware-specific and may require calibration. Never assume that values safe for one eye model are safe for another.
+
+## Citation
+
+This work is currently in submission.
+
+```text
+Author(s). (Year). Article title. Journal or conference, volume(issue), pages. DOI  
 ```
-
-*(Alternatively, you can run `pip install -r requirements.txt` if you create one).*
-
-### 3. Data Preparation
-
-The script expects the training and testing data to be in CSV format, located in the `data/` directory.
-
-- The target variable column must be named `Label`.
-- The `Label` column should contain numerical values (e.g., 0, 1, 2, 3) corresponding to the directions defined in the script.
-
-### 4. Run the Model
-
-Execute the main script to train the model, evaluate its accuracy, and generate the confusion matrix:
-
-```bash
-python train_evaluate.py
-```
-
-The script will output the Out-of-Bag (OOB) score, the accuracy on the test set, and automatically save a high-resolution `confusion_matrix.png` in the root directory.
-
-## 📝 Citation
-
-If you find this code useful for your research, please consider citing our paper:
-
-```bibtex
-@article{your_lastname2024title,
-  title={Your Paper Title Here},
-  author={Your Name and Co-authors},
-  journal={Journal or Conference Name},
-  year={2024},
-  volume={xx},
-  pages={xxx-xxx},
-  publisher={Publisher Name}
-}
-```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](chrome-extension://dhoenijjpgpeimemopealfcbiecgceod/LICENSE) file for details.
